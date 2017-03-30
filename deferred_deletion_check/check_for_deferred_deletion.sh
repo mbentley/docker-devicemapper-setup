@@ -5,14 +5,16 @@ PIPE2=/run/dss-$$-fifo2
 TEMPDIR=$(mktemp --tmpdir -d)
 
 platform_supports_deferred_deletion() {
+  set -x
   local deferred_deletion_supported=1
   trap cleanup_pipes EXIT
-  if [ ! -x "./dss-child-read-write.sh" ];then
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+  if [ ! -x "${DIR}/dss-child-read-write.sh" ];then
     return 1
   fi
   mkfifo $PIPE1
   mkfifo $PIPE2
-  unshare -m ./dss-child-read-write.sh $PIPE1 $PIPE2 "$TEMPDIR" &
+  unshare -m "${DIR}"/dss-child-read-write.sh $PIPE1 $PIPE2 "$TEMPDIR" &
   read -r -t 10 n <>$PIPE1
   if [ "$n" != "start" ];then
     return 1
@@ -21,6 +23,7 @@ platform_supports_deferred_deletion() {
   deferred_deletion_supported=$?
   echo "finish" > $PIPE2
   return $deferred_deletion_supported
+  set +x
 }
 
 cleanup_pipes(){

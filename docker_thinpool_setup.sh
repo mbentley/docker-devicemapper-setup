@@ -39,7 +39,7 @@ esac
 
 # source the deferred deletion support
 # shellcheck disable=SC1091
-. check_for_deferred_deletion.sh
+. ./deferred_deletion_check/check_for_deferred_deletion.sh
 
 # check result of deferred deletion check
 if platform_supports_deferred_deletion
