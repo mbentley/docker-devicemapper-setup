@@ -5,7 +5,6 @@ PIPE2=/run/dss-$$-fifo2
 TEMPDIR=$(mktemp --tmpdir -d)
 
 platform_supports_deferred_deletion() {
-  set -x
   local deferred_deletion_supported=1
   trap cleanup_pipes EXIT
   DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -23,7 +22,6 @@ platform_supports_deferred_deletion() {
   deferred_deletion_supported=$?
   echo "finish" > $PIPE2
   return $deferred_deletion_supported
-  set +x
 }
 
 cleanup_pipes(){
