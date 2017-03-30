@@ -37,13 +37,31 @@ case "$choice" in
     ;;
 esac
 
+# source the deferred deletion support
+# shellcheck disable=SC1091
+. check_for_deferred_deletion.sh
+
+# check result of deferred deletion check
+if platform_supports_deferred_deletion
+then
+  echo -e "\nDeferred deletion is supported"
+  DEFERRED_DELETION="true"
+else
+  echo -e "\nDeferred deletion is not supported"
+  DEFERRED_DELETION="false"
+fi
+
 # stop docker
 echo -e "\nEnsuring docker is stopped"
 systemctl stop docker
 
-# remove everything in /var/lib/docker
-echo -e "\nRemoving all files in /var/lib/docker"
-rm -rf /var/lib/docker/*
+# check to see if /var/lib/docker exists
+if [ -d "/var/lib/docker" ]
+then
+  # remove everything in /var/lib/docker
+  echo -e "\nRemoving all files in /var/lib/docker"
+  rm -rf /var/lib/docker/*
+fi
 
 # check to see if we need to install lvm2
 if ! pvdisplay > /dev/null 2>&1
@@ -104,13 +122,20 @@ thin_pool_autoextend_percent=20
 }
 EOF
 
-# enable monitoring to ensure autoextend fires
+# enable monitoring to ensure autoextend executes
 echo -e "\nEnabling monitoring of the thin pool for auto extension"
 lvchange --metadataprofile docker-thinpool docker/thinpool
 
 # show user the monitoring is enabled
 echo -e "\nVerifying monitoring was successfully enabled"
 lvs -o+seg_monitor
+
+# check to see if /etc/docker exists
+if [ ! -d "/etc/docker" ]
+then
+  echo -e "\nCreating directory '/etc/docker'"
+  mkdir /etc/docker
+fi
 
 # check to see if a daemon.json exists
 if [ -f "/etc/docker/daemon.json" ]
@@ -128,7 +153,7 @@ cat << EOF > /etc/docker/daemon.json
    "storage-opts": [
      "dm.thinpooldev=/dev/mapper/docker-thinpool",
      "dm.use_deferred_removal=true",
-     "dm.use_deferred_deletion=false"
+     "dm.use_deferred_deletion=${DEFERRED_DELETION}"
    ]
 }
 EOF
