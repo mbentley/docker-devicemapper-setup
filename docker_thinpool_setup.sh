@@ -21,6 +21,20 @@ then
   exit 1
 fi
 
+# check to see if the block device is mounted
+if mount | grep "${BLOCK_DEVICE}" > /dev/null 2>&1
+then
+  echo "Error: the specified block device ${BLOCK_DEVICE} is currently mounted! This should be an unused, unmounted device."
+  exit 1
+fi
+
+# check to see if the specified device is a block device
+if [ ! -b "${BLOCK_DEVICE}" ]
+then
+  echo "Error: ${BLOCK_DEVICE} is not a block device"
+  exit 1
+fi
+
 # give the user one last chance to quit
 echo "Running this script will remove the following:"
 echo "  * All data in /var/lib/docker"
