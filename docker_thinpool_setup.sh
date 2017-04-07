@@ -51,11 +51,18 @@ case "$choice" in
     ;;
 esac
 
-# source the deferred deletion support
+# check to see if we need to install lvm2
+if ! pvdisplay > /dev/null 2>&1
+then
+  echo -e "\nInstalling lvm2"
+  yum install -y lvm2
+fi
+
+# source the deferred deletion check support functions
 # shellcheck disable=SC1091
 . ./deferred_deletion_check/check_for_deferred_deletion.sh
 
-# check result of deferred deletion check
+# run and check result of deferred deletion functions
 if platform_supports_deferred_deletion
 then
   echo -e "\nDeferred deletion is supported"
@@ -75,13 +82,6 @@ then
   # remove everything in /var/lib/docker
   echo -e "\nRemoving all files in /var/lib/docker"
   rm -rf /var/lib/docker/*
-fi
-
-# check to see if we need to install lvm2
-if ! pvdisplay > /dev/null 2>&1
-then
-  echo -e "\nInstalling lvm2"
-  yum install -y lvm2
 fi
 
 # check to see if there is a physical device setup
@@ -155,8 +155,9 @@ fi
 if [ -f "/etc/docker/daemon.json" ]
 then
   # create backup of daemon.json
-  echo -e "\nExisting /etc/docker/daemon.json found; moving to daemon.json.bak"
-  mv /etc/docker/daemon.json /etc/docker/daemon.json.bak
+  DATETIME="$(date +'%s')"
+  echo -e "\nExisting /etc/docker/daemon.json found; moving to daemon.json.${DATETIME}.bak"
+  mv /etc/docker/daemon.json /etc/docker/daemon.json."${DATETIME}".bak
 fi
 
 # write devicemapper config to daemon.json
