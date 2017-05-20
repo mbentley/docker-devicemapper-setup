@@ -12,12 +12,19 @@ fi
 # get block device name
 BLOCK_DEVICE="${1:-}"
 
+# set block device to second argument when running headless
+if [ ${1} = "--headless" ]
+then
+    BLOCK_DEVICE="${2:-}"
+fi
+
 # verify a block device was provided
 if [ -z "${BLOCK_DEVICE}" ]
 then
   echo "ERROR: no block device specified"
   echo "Usage: ${0} /path/to/block/device"
   echo "Example: ${0} /dev/sdb"
+  echo "Headless example: ${0} --headless /dev/sdb"
   exit 1
 fi
 
@@ -35,21 +42,24 @@ then
   exit 1
 fi
 
-# give the user one last chance to quit
-echo "Running this script will remove the following:"
-echo "  * All data in /var/lib/docker"
-echo "  * All data on ${BLOCK_DEVICE}"
-echo ""
+if [ ${1} != "--headless" ]
+then
+  # give the user one last chance to quit
+  echo "Running this script will remove the following:"
+  echo "  * All data in /var/lib/docker"
+  echo "  * All data on ${BLOCK_DEVICE}"
+  echo ""
 
-read -rp "Do you with to continue (y/n)? " choice
-case "$choice" in
-  y|Y|[yY][eE][sS])
-    ;;
-  *)
-    echo "Aborting"
-    exit 1
-    ;;
-esac
+  read -rp "Do you with to continue (y/n)? " choice
+  case "$choice" in
+    y|Y|[yY][eE][sS])
+      ;;
+    *)
+      echo "Aborting"
+      exit 1
+      ;;
+  esac
+fi
 
 # check to see if we need to install lvm2
 if ! pvdisplay > /dev/null 2>&1
