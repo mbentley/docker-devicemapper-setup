@@ -13,7 +13,7 @@ fi
 BLOCK_DEVICE="${1:-}"
 
 # set block device to second argument when running headless
-if [ ${1} = "--headless" ]
+if [ "${1}" = "--headless" ]
 then
     BLOCK_DEVICE="${2:-}"
 fi
@@ -42,7 +42,7 @@ then
   exit 1
 fi
 
-if [ ${1} != "--headless" ]
+if [ "${1}" != "--headless" ]
 then
   # give the user one last chance to quit
   echo "Running this script will remove the following:"
@@ -69,8 +69,8 @@ then
 fi
 
 # source the deferred deletion check support functions
-# shellcheck disable=SC1091
-. ./deferred_deletion_check/check_for_deferred_deletion.sh
+# shellcheck disable=SC1091 source=/dev/null
+. "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/deferred_deletion_check/check_for_deferred_deletion.sh
 
 # run and check result of deferred deletion functions
 if platform_supports_deferred_deletion
