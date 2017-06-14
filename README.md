@@ -19,3 +19,8 @@ sudo ./docker_thinpool_setup.sh /dev/sdb
 ```
 sudo ./docker_thinpool_setup.sh /dev/sdb3
 ```
+
+### Standalone deferred deletion check
+```
+sudo ./deferred_deletion_check/standalone_deferred_deletion_check.sh
+```
